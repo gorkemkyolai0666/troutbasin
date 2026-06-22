@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(OPERATOR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  VIEWER
+}
+
+model Pool {
+  id          String     @id @default(uuid())
+  name        String
+  poolType    PoolType   @default(CONCRETE)
+  capacity    Float
+  volume      Float
+  status      PoolStatus @default(ACTIVE)
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  stocks      FishStock[]
+  feedLogs    FeedLog[]
+  waterQuality WaterQuality[]
+  harvests    Harvest[]
+}
+
+enum PoolType {
+  CONCRETE
+  EARTHEN
+  RACEWAY
+  CAGE
+  RECIRCULATING
+}
+
+enum PoolStatus {
+  ACTIVE
+  MAINTENANCE
+  EMPTY
+  INACTIVE
+}
+
+model FishStock {
+  id            String    @id @default(uuid())
+  poolId        String
+  pool          Pool      @relation(fields: [poolId], references: [id])
+  species       String
+  ageGroup      AgeGroup
+  count         Int
+  avgWeight     Float
+  entryDate     DateTime
+  source        String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  healthRecords HealthRecord[]
+}
+
+enum AgeGroup {
+  FRY
+  FINGERLING
+  JUVENILE
+  ADULT
+  BROODSTOCK
+}
+
+model FeedType {
+  id           String    @id @default(uuid())
+  name         String
+  brand        String?
+  proteinPct   Float
+  fatPct       Float
+  pelletSize   Float
+  pricePerKg   Float
+  stockKg      Float     @default(0)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  feedLogs     FeedLog[]
+}
+
+model FeedLog {
+  id         String   @id @default(uuid())
+  poolId     String
+  pool       Pool     @relation(fields: [poolId], references: [id])
+  feedTypeId String
+  feedType   FeedType @relation(fields: [feedTypeId], references: [id])
+  quantityKg Float
+  feedDate   DateTime
+  feedTime   String
+  notes      String?
+  createdAt  DateTime @default(now())
+}
+
+model HealthRecord {
+  id          String       @id @default(uuid())
+  stockId     String
+  stock       FishStock    @relation(fields: [stockId], references: [id])
+  recordDate  DateTime
+  recordType  HealthType
+  diagnosis   String?
+  treatment   String?
+  mortality   Int          @default(0)
+  inspector   String
+  notes       String?
+  createdAt   DateTime     @default(now())
+}
+
+enum HealthType {
+  ROUTINE_CHECK
+  DISEASE
+  TREATMENT
+  MORTALITY
+  VACCINATION
+}
+
+model WaterQuality {
+  id              String   @id @default(uuid())
+  poolId          String
+  pool            Pool     @relation(fields: [poolId], references: [id])
+  measureDate     DateTime
+  temperature     Float
+  dissolvedOxygen Float
+  ph              Float
+  ammonia         Float?
+  nitrite         Float?
+  nitrate         Float?
+  turbidity       Float?
+  inspector       String
+  notes           String?
+  createdAt       DateTime @default(now())
+}
+
+model Harvest {
+  id            String        @id @default(uuid())
+  harvestCode   String        @unique
+  poolId        String
+  pool          Pool          @relation(fields: [poolId], references: [id])
+  harvestDate   DateTime
+  totalFish     Int
+  totalWeightKg Float
+  avgWeightKg   Float
+  gradeA        Float         @default(0)
+  gradeB        Float         @default(0)
+  gradeC        Float         @default(0)
+  status        HarvestStatus @default(PLANNED)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum HarvestStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  city      String?
+  taxId     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+}
+
+model Sale {
+  id          String     @id @default(uuid())
+  saleCode    String     @unique
+  customerId  String
+  customer    Customer   @relation(fields: [customerId], references: [id])
+  saleDate    DateTime
+  deliveryDate DateTime?
+  status      SaleStatus @default(PENDING)
+  totalAmount Float
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  items       SaleItem[]
+}
+
+enum SaleStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model SaleItem {
+  id        String @id @default(uuid())
+  saleId    String
+  sale      Sale   @relation(fields: [saleId], references: [id])
+  product   String
+  quantity  Float
+  unit      String @default("kg")
+  unitPrice Float
+  total     Float
+}

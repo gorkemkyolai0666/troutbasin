@@ -1,0 +1,23 @@
+{
+  "projectId": "troutbasin-aquaculture-2026",
+  "projectName": "TroutBasin",
+  "designSystemId": "technical-data-dense-futuristic",
+  "designDirection": "Technical Data-Dense Futuristic — deep navy ocean palette, cyan accents, dark analytical layout",
+  "colorTokens": {
+    "primary": "#0C4A6E",
+    "secondary": "#0891B2",
+    "accent": "#10B981",
+    "background": "#020617",
+    "surface": "#0F172A",
+    "neutral": "#64748B"
+  },
+  "typography": {
+    "heading": "Inter, system-ui, sans-serif",
+    "body": "Inter, system-ui, sans-serif",
+    "mono": "JetBrains Mono, monospace"
+  },
+  "screens": [
+    "troutbasin-login-dashboard",
+    "troutbasin-analytics-panels"
+  ]
+}
